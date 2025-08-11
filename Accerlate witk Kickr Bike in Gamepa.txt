@@ -1,0 +1,22 @@
+Accerlate witk Kickr Bike in Gamepad Configuration "A"
+You can Change it in the Python Source
+
+
+My KeyMapping
+ZwiftPlay Need for Speed HP Remastered KeyMapping
+Turn left -> S
+Turn Right -> W
+Brake -> arrowDown
+HandBrake -> U
+Nitro -> Y
+EMP -> Z
+Turbo/Heli -> A
+Nails -> Z
+
+Menu Scroll -> arrowUp/arrowDown
+Option I -> A
+MenuBack -> B
+
+You can reconfigure in NFS Menu
+
+
