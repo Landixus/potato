@@ -9,14 +9,16 @@ _Power Output Translator for Analog Trigger Operations_
 ---
 
 ## Table of Contents
-
-1. [Description](#description)  
-2. [Features](#features)  
-3. [Requirements](#requirements)  
-4. [Installation](#installation)  
-5. [Configuration](#configuration)  
-6. [Usage](#usage)  
-7. [Customization](#customization)  
+0. SwiftControlNFS.zip is the SwiftFor NFSHP_Remasterd
+0.1 potato.exe is running without any pythons stuff needed.
+0.1.1 if ViGEM is missing make sure  - Virtual Gamepad Emulation Framework is installed https://github.com/nefarius/ViGEmBus/releases    
+2. [Description](#description)  
+3. [Features](#features)  
+4. [Requirements](#requirements)  
+5. [Installation](#installation)  
+6. [Configuration](#configuration)  
+7. [Usage](#usage)  
+8. [Customization](#customization)  
 
 ---
 
