@@ -8,6 +8,8 @@ Reads cycling power from a BLE home trainer (e.g. Wahoo KICKR),
 maps it through a tanh curve, and feeds it into the right trigger of
 a virtual Xbox 360 controller. Optionally binds Left/Right arrow keys
 to the D‐pad (for compatibility with Zwift Play).
+
+changes in this Version -> its pressed  the A Button instead of trigger use. 
 """
 
 # Standard lib
@@ -40,22 +42,23 @@ def parse_cycling_power(data: bytearray) -> int:
 class KickrController:
     """
     Manages BLE connection to the KICKR, receives power notifications,
-    applies a tanh-based mapping, and updates a virtual gamepad.
+    and presses a virtual gamepad button when power exceeds a threshold.
     """
 
     def __init__(self, ftp, device_name, threshold, update_callback):
         """
-        :param ftp: functional threshold power (used for tanh scaling)
+        :param ftp: functional threshold power (not used for button press, but kept for context)
         :param device_name: BLE name (partial match) of the trainer
-        :param threshold: minimum power (watts) required to engage throttle
-        :param update_callback: function(power_watts: int, trigger_ratio: float)
+        :param threshold: minimum power (watts) required to engage the button
+        :param update_callback: function(power_watts: int, is_pressed: bool)
         """
         self.ftp = ftp
         self.device_name = device_name.upper()
         self.threshold = threshold
         self.client = None
         self.power = 0
-        self.trigger = 0.0
+        # NEU: Zustand der Taste verfolgen, um Befehls-Spam zu vermeiden
+        self.button_pressed = False
         self.update_callback = update_callback
         self.gamepad = vgamepad.VX360Gamepad()
 
@@ -92,30 +95,30 @@ class KickrController:
     async def handle_power_notify(self, sender, data: bytearray):
         """
         Callback invoked on each power notification.
-        Parses power, computes trigger ratio, and updates the virtual gamepad.
+        Parses power and presses or releases a virtual button based on the threshold.
 
         :param sender: BLE characteristic UUID (unused)
         :param data: raw notification bytes
         """
         self.power = parse_cycling_power(data)
+        
+        # Prüfen, ob die Leistung den Schwellenwert überschreitet
+        is_active = self.power >= self.threshold
 
-        # Ignore values below threshold
-        if self.power < self.threshold:
-            self.trigger = 0.0
-        else:
-            # Map using tanh: at ftp watts → ~75% trigger
-            scale = math.atanh(0.75) / self.ftp
-            self.trigger = math.tanh(scale * self.power)
-
-        # Convert 0.0–1.0 ratio to 0–255 trigger byte
-        trigger_value = int(self.trigger * 255)
-
-        # Update virtual controller
-        self.gamepad.right_trigger(trigger_value)
-        self.gamepad.update()
-
-        # Optional callback for debug or UI
-        self.update_callback(self.power, self.trigger)
+        # NUR den Zustand des Gamepads aktualisieren, WENN sich etwas ändert.
+        # Dies ist der entscheidende Teil, um Fehler zu vermeiden und die Logik sauber zu halten.
+        if is_active and not self.button_pressed:
+            # Zustand wechselt zu "gedrückt"
+            self.gamepad.press_button(button=XUSB_BUTTON.XUSB_GAMEPAD_A)
+            self.gamepad.update()
+            self.button_pressed = True
+            self.update_callback(self.power, self.button_pressed)
+        elif not is_active and self.button_pressed:
+            # Zustand wechselt zu "losgelassen"
+            self.gamepad.release_button(button=XUSB_BUTTON.XUSB_GAMEPAD_A)
+            self.gamepad.update()
+            self.button_pressed = False
+            self.update_callback(self.power, self.button_pressed)
 
     async def start_notifications(self):
         """
@@ -172,9 +175,10 @@ def main():
     parser = argparse.ArgumentParser(description="BLE to Gamepad bridge")
     parser.add_argument("--ftp", type=float, default=230.0,
                         help="Functional Threshold Power in watts")
-    parser.add_argument("--device-name", type=str, default="KICKR",
+    parser.add_argument("--device-name", type=str, default="KICKR BIKE 2CFA",
                         help="Partial name of BLE device (e.g. KICKR)")
-    parser.add_argument("--threshold", type=float, default=0,
+    # GEÄNDERT: Ein sinnvollerer Standard-Schwellenwert, um "Leerlauf" zu vermeiden
+    parser.add_argument("--threshold", type=float, default=50,
                         help="Ignore power below this wattage")
     parser.add_argument("--disable-dpad", action="store_true",
                         help="Disable arrow key mapping to D-Pad")
@@ -188,10 +192,11 @@ def main():
         ftp=args.ftp,
         device_name=args.device_name,
         threshold=args.threshold,
-        update_callback=lambda p, t: print(f"{p} W → Trigger: {t:.2f}")
+        # GEÄNDERT: Die Ausgabe an die neue Logik (Taste gedrückt/losgelassen) anpassen
+        update_callback=lambda p, pressed: print(f"{p} W → Key A {'pressed' if pressed else 'released'}")
     )
 
-    # Keyboard mapping (optional)
+    # Keyboard mapping (optional) - DIESER TEIL BLEIBT UNVERÄNDERT
     if not args.disable_dpad:
         setup_keyboard_mapping(controller.gamepad)
 
