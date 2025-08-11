@@ -47,7 +47,7 @@ It optionally binds Left/Right arrow keys to the D-Pad for compatibility with to
 - Windows PC with ViGEm installed (used by `vgamepad`)  
 - Optional: keyboard input for D-Pad mapping
 
-### Software
+### Software *** Or jsu run the exe File
 
 | Component      | Install Command              |
 |----------------|------------------------------|
