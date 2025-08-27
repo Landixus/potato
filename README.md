@@ -9,9 +9,10 @@ _Power Output Translator for Analog Trigger Operations_
 ---
 
 ## Table of Contents
-0. SwiftControlNFS.zip is the SwiftFor NFSHP_Remasterd
-0.1 potato.exe is running without any pythons stuff needed.
-0.1.1 if ViGEM is missing make sure  - Virtual Gamepad Emulation Framework is installed https://github.com/nefarius/ViGEmBus/releases    
+0. SwiftControl is the SwiftFor NFSHP_Remasterd, with app launcher in the upper right >
+0. potato.exe is running without any pythons stuff needed.
+0. if ViGEM is missing make sure  - Virtual Gamepad Emulation Framework is installed https://github.com/nefarius/ViGEmBus/releases    
+1. config.ini here you can try to add your FEC device: elite,tacx, ... what ever
 2. [Description](#description)  
 3. [Features](#features)  
 4. [Requirements](#requirements)  
